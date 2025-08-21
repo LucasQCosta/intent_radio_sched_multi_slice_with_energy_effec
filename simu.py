@@ -19,15 +19,28 @@ from channels.quadriga_seq import QuadrigaChannelSeq
 from mobilities.simple import SimpleMobility
 from sixg_radio_mgmt import MARLCommEnv
 from traffics.mult_slice import MultSliceTraffic
+from agents.energ_effic_ib_sched import energy_efficiency_IBSched
 
 scenarios = {
     # "hyperparam_opt_mult_slice": MultSliceAssociation,
     "mult_slice_seq": MultSliceAssociationSeq,
-    "mult_slice": MultSliceAssociation,
-    "mult_slice_overfit": MultSliceAssociation,
-    "finetune_mult_slice_seq": MultSliceAssociationSeq,
+    # "mult_slice": MultSliceAssociation,
+    # "mult_slice_overfit": MultSliceAssociation,
+    # "finetune_mult_slice_seq": MultSliceAssociationSeq,
 }
 agents = {
+    "ener_effic_ib_sched":{ ## ener_effc = energy efficient
+        "class": energy_efficiency_IBSched,
+        "rl": True,
+        "train": True,
+        "load_method": "best",
+        "enable_masks": False,
+        "debug_mode": True,
+        "stochastic_policy": False,
+        "param_config_mode": "default",
+        "ray": True,
+    },
+
     "ray_ib_sched": {
         "class": IBSched,
         "rl": True,
@@ -220,13 +233,9 @@ env_config_scenarios = {
         "enable_random_episodes": True,
         "number_rollout_workers": 10,
         "agents": [
-            "mapf",
-            "marr",
-            "ray_ib_sched_default",
-            "sched_twc",
-            "sched_coloran",
+            "ener_effic_ib_sched"
         ],
-        "number_scenarios": 10,
+        "number_scenarios": 3,
         "scenarios_skip_episodes": 100,
     },
     "mult_slice": {
@@ -442,7 +451,8 @@ for scenario in scenarios.keys():
         for scenario_number in range(number_scenarios):
             env_config["agent"] = agent_name + f"_{str(scenario_number)}"
             marl_comm_env, agent = env_creator(env_config, False)  # type: ignore
-            if "ray" in agent_name:
+            enable_ray = agents[agent_name].get("ray", False)
+            if enable_ray:
                 param_config_mode = agents[agent_name].get(
                     "param_config_mode", "default"
                 )

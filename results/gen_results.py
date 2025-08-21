@@ -1051,6 +1051,9 @@ def get_metric_episodes(
             "agent_action": data["agent_action"],
         }
         match metric:
+            case "sched_decision":
+                pass
+
             case "reward_per_episode" | "reward_per_episode_cumsum":
                 reward = (
                     [
@@ -1151,6 +1154,9 @@ def plot_total_agent(
     xlabel = "Episode number"
     ylabel = ""
     match metric:
+        case "sched_decision":
+            pass
+
         case "reward_per_episode_cumsum":
             plt.plot(x_values, np.cumsum(y_values), label=f"{agent}")
             ylabel = "Cumulative reward (inter-slice agent)"
@@ -2023,7 +2029,7 @@ def save_table_tensorboard_metrics(
     for scenario_number in scenario_numbers:
         for agent in agents:
             agent_path = f"./ray_results/{scenario}/{agent}_{scenario_number}/"
-            df = process_runs(agent_path, tags)
+            #df = process_runs(agent_path, tags)
             evaluation = df[
                 df["metric"]
                 == "ray/tune/evaluation/env_runners/policy_reward_mean/inter_slice_sched"
@@ -2092,41 +2098,42 @@ def save_table_tensorboard_metrics(
 
 
 scenarios = [
-    "mult_slice_seq",
-    "mult_slice",
-    "mult_slice_overfit",
-    "finetune_mult_slice_seq",
+    "mult_slice_seq"
+    #"mult_slice",
+    #"mult_slice_overfit",
+    #"finetune_mult_slice_seq",
 ]
 
 for scenario in scenarios:
     if scenario == "mult_slice_seq":
-        scenario_numbers = np.arange(10)
+        scenario_numbers = np.arange(1)
         agent_names = [
+            "ener_effic_ib_sched",
             "ray_ib_sched_default",
             "sched_twc",
-            "sched_coloran",
-            "mapf",
+            # "sched_coloran",
+            # "mapf",
             "marr",
         ]
 
         # Check if agents are compared in episodes with the same characteristics
-        for scenario_number in scenario_numbers:
-            episodes = np.arange(
-                (100 * scenario_number),
-                20 + (100 * scenario_number),
-                dtype=int,
-            )
-            if fair_comparison_check(
-                [
-                    agent_name + f"_{scenario_number}"
-                    for agent_name in agent_names
-                ],
-                episodes,
-                [scenario],
-            ):
-                print(
-                    f"Scenario {scenario_number}: Agents are compared in episodes with the same characteristics"
-                )
+        # for scenario_number in scenario_numbers:
+        #     episodes = np.arange(
+        #         (100 * scenario_number),
+        #         20 + (100 * scenario_number),
+        #         dtype=int,
+        #     )
+        #     if fair_comparison_check(
+        #         [
+        #             agent_name + f"_{scenario_number}"
+        #             for agent_name in agent_names
+        #         ],
+        #         episodes,
+        #         [scenario],
+        #     ):
+        #         print(
+        #             f"Scenario {scenario_number}: Agents are compared in episodes with the same characteristics"
+        #         )
 
         # One graph for all agents considering all episodes (one graph for all episodes)
         metrics = [
@@ -2139,18 +2146,18 @@ for scenario in scenarios:
             plot_total_scenarios(
                 metric, scenario, agent_names, scenario_numbers, slices
             )
-            if metric != "rbs_needed_network_scenarios":
-                plot_total_scenarios(
-                    metric,
-                    scenario,
-                    agent_names,
-                    np.array([6, 4, 2]),
-                    slices,
-                    "_selected_scenarios",
-                )
-        plot_tensorboard_metrics(
-            scenario, ["ray_ib_sched_default"], np.array([2])
-        )
+            #if metric != "rbs_needed_network_scenarios":
+            #    plot_total_scenarios(
+            #        metric,
+            #        scenario,
+            #        agent_names,
+            #        np.array([6, 4, 2]),
+            #        slices,
+            #        "_selected_scenarios",
+            #    )
+        #plot_tensorboard_metrics(
+        #    scenario, ["ray_ib_sched_default"], np.array([2])
+        #)
     elif scenario in ["mult_slice", "mult_slice_overfit"]:
         agent_names = [
             "ray_ib_sched_default",
